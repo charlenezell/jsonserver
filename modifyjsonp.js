@@ -94,17 +94,19 @@ function handleUncompressed(req, res, _write, _end, callback) {
     // Rewrite response method and get the content.
     res.write = data => buffer.concat(data);
     res.end = () => {
-        let body;
+        let body,w;
         try {
             let str = buffer.toBuffer().toString();
-            body = JSON.parse(str.slice(req.query.callback.length + 1, str.length - 1));
+            // body = JSON.parse(str.slice(req.query.callback.length + 1, str.length - 1));
+            eval(`function ${req.query.callback}(a){w=a;} ${str}`);
+
         } catch (e) {
           console.log('JSON.parse error:', e);
         }
 
         // Custom modified logic
         if (typeof callback === 'function') {
-          body = callback(body);
+          body = callback(w);
         }
 
         let finish = _body => {
